@@ -389,6 +389,11 @@ const BOOKING_CATEGORIES = [
   },
 ];
 
+const BOOKING_CATEGORY_SPECIALTY = {
+  orthopedics: 'Orthopedics',
+  cardiology: 'Cardiac Surgery',
+};
+
 const BOTTOM_SECTIONS = [
   {
     title: 'SEO and visibility',
@@ -941,48 +946,83 @@ function App() {
 
               {activeScreen === 'home' && (
                 <div className="screen-view app-scroll">
-                  <section className="module-card listing-priority-card">
+                  <section className="module-card disease-directory-card">
                     <div className="section-heading">
-                      <h3>Hospital listings</h3>
-                      <button className="mini-chip active" onClick={() => setActiveScreen('search')} type="button">
-                        Search all
+                      <h3>Disease listings</h3>
+                      <button className="mini-chip active" onClick={() => openBookingFlow()} type="button">
+                        View all
                       </button>
                     </div>
-                    <div className="quick-filter-row">
-                      <button
-                        className={selectedSpecialty === 'All' ? 'mini-chip active' : 'mini-chip'}
-                        onClick={() => setSelectedSpecialty('All')}
-                        type="button"
-                      >
-                        All
-                      </button>
-                      {SPECIALTIES.map((item) => (
+                    <div className="disease-chip-grid">
+                      {BOOKING_CATEGORIES.slice(0, 8).map((category) => (
                         <button
-                          className={selectedSpecialty === item ? 'mini-chip active' : 'mini-chip'}
-                          key={item}
-                          onClick={() => setSelectedSpecialty(item)}
+                          className={selectedBookingCategoryId === category.id ? 'disease-chip active' : 'disease-chip'}
+                          key={category.id}
+                          onClick={() => {
+                            setSelectedBookingCategoryId(category.id);
+                            setSelectedAilment(category.ailments[0]);
+                            setSelectedSpecialty(BOOKING_CATEGORY_SPECIALTY[category.id] ?? 'All');
+                          }}
                           type="button"
                         >
-                          {item}
+                          <span>{category.short}</span>
+                          <strong>{category.title}</strong>
                         </button>
                       ))}
                     </div>
-                    <div className="hospital-carousel">
+                  </section>
+
+                  <section className="module-card hospital-listing-card priority-directory-card">
+                    <div className="section-heading">
+                      <h3>Hospital listings</h3>
+                    </div>
+                    <div className="list-stack compact-list-stack">
                       {hospitals.map((hospital) => (
                         <button
-                          className="hospital-carousel-card"
+                          className="list-card featured-hospital-card compact-provider-card"
                           key={hospital.id}
                           onClick={() => openHospital(hospital.id, 'hospital')}
                           type="button"
                         >
-                          <img alt={hospital.name} className="hospital-carousel-image" src={hospital.image} />
-                          <div className="hospital-carousel-copy">
-                            <span className="hospital-chip">{hospital.specialty}</span>
+                          <img alt={hospital.name} className="card-thumb" src={hospital.image} />
+                          <div className="compact-provider-copy">
+                            <div className="hospital-card-topline">
+                              <span className="hospital-chip">{hospital.treatmentType}</span>
+                              <span className="hospital-city">{hospital.city}, {hospital.country}</span>
+                            </div>
                             <strong>{hospital.name}</strong>
-                            <p>{hospital.city}, {hospital.country}</p>
-                            <div className="hospital-card-footer compact">
+                            <p>{hospital.specialty} - {hospital.valueScore}% value for money</p>
+                            <div className="provider-metrics">
+                              <span>From {formatCurrency(hospital.packageFrom)}</span>
                               <span>{hospital.rating} rating</span>
-                              <span>{hospital.surgeons} surgeons</span>
+                              <span>{hospital.surgeons} doctors</span>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="module-card priority-directory-card">
+                    <div className="section-heading">
+                      <h3>Doctor listings</h3>
+                    </div>
+                    <div className="doctor-list compact-list-stack">
+                      {hospitals.map((hospital) => (
+                        <button
+                          className="doctor-card"
+                          key={hospital.leadSurgeon}
+                          onClick={() => openHospital(hospital.id, 'surgeon')}
+                          type="button"
+                        >
+                          <img alt={hospital.leadSurgeon} src={hospital.surgeonImage} />
+                          <div>
+                            <strong>{hospital.leadSurgeon}</strong>
+                            <p>{hospital.surgeonTitle}</p>
+                            <span>{hospital.doctorExperience} - {hospital.city}</span>
+                            <div className="provider-metrics compact">
+                              <span>{formatCurrency(hospital.doctorFee)} consult</span>
+                              <span>{hospital.languages.slice(0, 2).join(', ')}</span>
                             </div>
                           </div>
                         </button>
@@ -1217,94 +1257,6 @@ function App() {
                     </div>
                   </section>
 
-                  <section className="module-card">
-                    <div className="section-heading">
-                      <h3>Body parts and diseases</h3>
-                    </div>
-                    <div className="body-part-grid">
-                      {BODY_PART_CATEGORIES.map((category) => (
-                        <button
-                          className="body-part-card"
-                          key={category.id}
-                          onClick={() => openBookingFlow()}
-                          type="button"
-                        >
-                          <img alt={category.title} className="body-part-image" src={category.image} />
-                          <div className="body-part-copy">
-                            <span className="body-part-icon">{category.icon}</span>
-                            <strong>{category.title}</strong>
-                            <p>{category.body}</p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-
-                  <section className="module-card hospital-listing-card">
-                    <div className="section-heading">
-                      <h3>Hospital listings</h3>
-                    </div>
-                    <div className="list-stack">
-                      {HOSPITALS.map((hospital) => (
-                        <button
-                          className="list-card featured-hospital-card"
-                          key={hospital.id}
-                          onClick={() => openHospital(hospital.id, 'hospital')}
-                          type="button"
-                        >
-                          <img alt={hospital.name} className="card-thumb" src={hospital.image} />
-                          <div className="hospital-card-topline">
-                            <span className="hospital-chip">{hospital.treatmentType}</span>
-                            <span className="hospital-city">{hospital.city}, {hospital.country}</span>
-                          </div>
-                          <strong>{hospital.name}</strong>
-                          <p>{hospital.intro}</p>
-                          <div className="provider-metrics">
-                            <span>From {formatCurrency(hospital.packageFrom)}</span>
-                            <span>{hospital.valueScore}% value</span>
-                            <span>{hospital.rating} rating</span>
-                          </div>
-                          <div className="hospital-card-tags">
-                            {[hospital.specialty, ...hospital.procedures.slice(0, 2)].map((item) => (
-                              <span className="hospital-tag" key={item}>{item}</span>
-                            ))}
-                          </div>
-                          <div className="hospital-card-footer">
-                            <span>{hospital.surgeons} surgeons</span>
-                            <span>{hospital.availability}</span>
-                            <strong>View listing</strong>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-
-                  <section className="module-card">
-                    <div className="section-heading">
-                      <h3>Doctor listings</h3>
-                    </div>
-                    <div className="doctor-list">
-                      {HOSPITALS.map((hospital) => (
-                        <button
-                          className="doctor-card"
-                          key={hospital.leadSurgeon}
-                          onClick={() => openHospital(hospital.id, 'surgeon')}
-                          type="button"
-                        >
-                          <img alt={hospital.leadSurgeon} src={hospital.surgeonImage} />
-                          <div>
-                            <strong>{hospital.leadSurgeon}</strong>
-                            <p>{hospital.surgeonTitle}</p>
-                            <span>{hospital.doctorExperience} - {hospital.city}</span>
-                            <div className="provider-metrics compact">
-                              <span>{formatCurrency(hospital.doctorFee)} consult</span>
-                              <span>{hospital.languages.slice(0, 2).join(', ')}</span>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
                 </div>
               )}
 
