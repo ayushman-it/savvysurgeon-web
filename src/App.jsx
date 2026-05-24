@@ -1,6 +1,19 @@
 import React, { useMemo, useRef, useState } from 'react';
 
 const SPECIALTIES = ['Cardiac Surgery', 'Orthopedics', 'Oncology', 'Fertility'];
+const TREATMENT_GROUPS = [
+  { id: 'all', label: 'All treatments', type: 'All', procedures: [] },
+  { id: 'medical', label: 'Medical', type: 'Medical', procedures: ['CABG', 'Valve repair', 'Knee replacement', 'Hip replacement', 'Breast oncology', 'GI oncology'] },
+  { id: 'aesthetic', label: 'Aesthetic', type: 'Aesthetic', procedures: ['Hair transplant', 'Rhinoplasty', 'Body contouring', 'Dental implants'] },
+  { id: 'wellness', label: 'Wellness', type: 'Wellness', procedures: ['Executive health check', 'Rehab program', 'Preventive screening'] },
+];
+const DESTINATION_FILTERS = ['All destinations', 'India', 'Turkey', 'Singapore', 'Thailand', 'UAE', 'South Korea'];
+const BUDGET_FILTERS = [
+  { label: 'Any budget', min: 0, max: Infinity },
+  { label: 'Under $3k', min: 0, max: 3000 },
+  { label: '$3k-$8k', min: 3000, max: 8000 },
+  { label: '$8k+', min: 8000, max: Infinity },
+];
 const BRAND_NAME = 'SavvySurgeon';
 const BRAND_TAGLINE = '';
 
@@ -11,10 +24,15 @@ const HOSPITALS = [
     city: 'Chennai',
     country: 'India',
     specialty: 'Cardiac Surgery',
+    treatmentType: 'Medical',
     rating: '4.9',
+    valueScore: 92,
+    packageFrom: 500,
     surgeons: 18,
     leadSurgeon: 'Dr. Anika Raman',
     surgeonTitle: 'Cardiothoracic Surgeon',
+    doctorExperience: '18 years',
+    doctorFee: 45,
     intro: 'High-volume cardiac destination with international patient coordination and ICU-backed recovery.',
     image:
       'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80',
@@ -24,6 +42,7 @@ const HOSPITALS = [
     facilities: ['Hybrid cath lab', 'International patient lounge', 'Private ICU recovery', '24x7 care desk'],
     support: ['Visa letter support', 'Airport pickup', 'Translator on request', 'Guest stay partners'],
     certifications: ['JCI aligned workflow', 'Cardiac center of excellence', 'International patient services'],
+    languages: ['English', 'Hindi', 'Arabic'],
     contact: '+91 44 4400 8800',
     accommodation: 'Hospital recovery rooms and nearby serviced apartments available',
     availability: 'Video review within 3 hours',
@@ -42,10 +61,15 @@ const HOSPITALS = [
     city: 'Istanbul',
     country: 'Turkey',
     specialty: 'Orthopedics',
+    treatmentType: 'Medical',
     rating: '4.8',
+    valueScore: 93,
+    packageFrom: 2200,
     surgeons: 11,
     leadSurgeon: 'Dr. Selim Kara',
     surgeonTitle: 'Joint Replacement Specialist',
+    doctorExperience: '16 years',
+    doctorFee: 60,
     intro: 'Focused on joint replacement and mobility recovery with travel concierge support.',
     image:
       'https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1200&q=80',
@@ -55,6 +79,7 @@ const HOSPITALS = [
     facilities: ['Robotic operating theatre', 'Dedicated rehab floor', 'Recovery suites', 'Mobility assessment desk'],
     support: ['Hotel transfer desk', 'Companion support', 'Physio pathway', 'Interpreter service'],
     certifications: ['Joint replacement excellence', 'Sports injury pathway', 'International mobility rehab'],
+    languages: ['English', 'Turkish', 'Russian'],
     contact: '+90 212 880 2210',
     accommodation: 'Partner hotels and rehabilitation stay packages',
     availability: 'Same-day response for travel cases',
@@ -73,10 +98,15 @@ const HOSPITALS = [
     city: 'Singapore',
     country: 'Singapore',
     specialty: 'Oncology',
+    treatmentType: 'Medical',
     rating: '4.9',
+    valueScore: 95,
+    packageFrom: 600,
     surgeons: 9,
     leadSurgeon: 'Dr. Mei Tan',
     surgeonTitle: 'Surgical Oncologist',
+    doctorExperience: '20 years',
+    doctorFee: 80,
     intro: 'Multidisciplinary oncology care with tumor-board decisions and coordinator-led planning.',
     image:
       'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80',
@@ -86,6 +116,7 @@ const HOSPITALS = [
     facilities: ['Tumor board room', 'Private infusion suites', 'Cancer care coordination', 'Family counseling rooms'],
     support: ['Digital records intake', 'Insurance desk', 'Family counseling', 'Tele follow-up'],
     certifications: ['Oncology center accreditation', 'Multidisciplinary treatment board', 'Global second opinion desk'],
+    languages: ['English', 'Mandarin', 'Malay'],
     contact: '+65 6510 8888',
     accommodation: 'Premium recovery suites and nearby family stay support',
     availability: 'Next business day response',
@@ -498,6 +529,11 @@ function App() {
   const [selectedHospitalId, setSelectedHospitalId] = useState(HOSPITALS[0].id);
   const [query, setQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('All');
+  const [selectedTreatmentGroup, setSelectedTreatmentGroup] = useState('all');
+  const [selectedProcedure, setSelectedProcedure] = useState('All procedures');
+  const [selectedDestination, setSelectedDestination] = useState('All destinations');
+  const [selectedBudget, setSelectedBudget] = useState(BUDGET_FILTERS[0].label);
+  const [selectedSupportFilter, setSelectedSupportFilter] = useState('Any support');
   const [tripNights, setTripNights] = useState(6);
   const [withCompanion, setWithCompanion] = useState(true);
   const [requestMode, setRequestMode] = useState('Video consultation');
@@ -526,22 +562,41 @@ function App() {
 
   const hospitals = useMemo(() => {
     const search = query.trim().toLowerCase();
+    const treatmentGroup = TREATMENT_GROUPS.find((group) => group.id === selectedTreatmentGroup) ?? TREATMENT_GROUPS[0];
+    const budget = BUDGET_FILTERS.find((item) => item.label === selectedBudget) ?? BUDGET_FILTERS[0];
     return HOSPITALS.filter((hospital) => {
       const matchesSpecialty = selectedSpecialty === 'All' || hospital.specialty === selectedSpecialty;
+      const matchesTreatment = treatmentGroup.type === 'All' || hospital.treatmentType === treatmentGroup.type;
+      const matchesProcedure = selectedProcedure === 'All procedures' || hospital.procedures.includes(selectedProcedure);
+      const matchesDestination = selectedDestination === 'All destinations' || hospital.country === selectedDestination;
+      const matchesBudget = hospital.packageFrom >= budget.min && hospital.packageFrom <= budget.max;
+      const matchesSupport = selectedSupportFilter === 'Any support' || hospital.support.includes(selectedSupportFilter);
       const haystack = [
         hospital.name,
         hospital.city,
         hospital.country,
         hospital.specialty,
+        hospital.treatmentType,
         hospital.leadSurgeon,
+        hospital.surgeonTitle,
+        ...hospital.languages,
+        ...hospital.certifications,
         ...hospital.procedures,
       ]
         .join(' ')
         .toLowerCase();
 
-      return matchesSpecialty && (!search || haystack.includes(search));
+      return matchesSpecialty && matchesTreatment && matchesProcedure && matchesDestination && matchesBudget && matchesSupport && (!search || haystack.includes(search));
     });
-  }, [query, selectedSpecialty]);
+  }, [query, selectedBudget, selectedDestination, selectedProcedure, selectedSpecialty, selectedSupportFilter, selectedTreatmentGroup]);
+
+  const selectedTreatmentMeta = TREATMENT_GROUPS.find((group) => group.id === selectedTreatmentGroup) ?? TREATMENT_GROUPS[0];
+  const availableProcedures = ['All procedures', ...new Set(
+    (selectedTreatmentMeta.type === 'All'
+      ? HOSPITALS.flatMap((hospital) => hospital.procedures)
+      : selectedTreatmentMeta.procedures)
+      .filter(Boolean),
+  )];
 
   const selectedHospital = hospitals.find((hospital) => hospital.id === selectedHospitalId)
     ?? HOSPITALS.find((hospital) => hospital.id === selectedHospitalId)
@@ -1199,20 +1254,52 @@ function App() {
                         >
                           <img alt={hospital.name} className="card-thumb" src={hospital.image} />
                           <div className="hospital-card-topline">
-                            <span className="hospital-chip">{hospital.specialty}</span>
+                            <span className="hospital-chip">{hospital.treatmentType}</span>
                             <span className="hospital-city">{hospital.city}, {hospital.country}</span>
                           </div>
                           <strong>{hospital.name}</strong>
                           <p>{hospital.intro}</p>
+                          <div className="provider-metrics">
+                            <span>From {formatCurrency(hospital.packageFrom)}</span>
+                            <span>{hospital.valueScore}% value</span>
+                            <span>{hospital.rating} rating</span>
+                          </div>
                           <div className="hospital-card-tags">
-                            {hospital.facilities.slice(0, 2).map((item) => (
+                            {[hospital.specialty, ...hospital.procedures.slice(0, 2)].map((item) => (
                               <span className="hospital-tag" key={item}>{item}</span>
                             ))}
                           </div>
                           <div className="hospital-card-footer">
-                            <span>{hospital.rating} rating</span>
                             <span>{hospital.surgeons} surgeons</span>
+                            <span>{hospital.availability}</span>
                             <strong>View listing</strong>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="module-card">
+                    <div className="section-heading">
+                      <h3>Doctor listings</h3>
+                    </div>
+                    <div className="doctor-list">
+                      {HOSPITALS.map((hospital) => (
+                        <button
+                          className="doctor-card"
+                          key={hospital.leadSurgeon}
+                          onClick={() => openHospital(hospital.id, 'surgeon')}
+                          type="button"
+                        >
+                          <img alt={hospital.leadSurgeon} src={hospital.surgeonImage} />
+                          <div>
+                            <strong>{hospital.leadSurgeon}</strong>
+                            <p>{hospital.surgeonTitle}</p>
+                            <span>{hospital.doctorExperience} - {hospital.city}</span>
+                            <div className="provider-metrics compact">
+                              <span>{formatCurrency(hospital.doctorFee)} consult</span>
+                              <span>{hospital.languages.slice(0, 2).join(', ')}</span>
+                            </div>
                           </div>
                         </button>
                       ))}
@@ -1374,7 +1461,7 @@ function App() {
               {activeScreen === 'search' && (
                 <div className="screen-view app-scroll">
                   <section className="search-panel">
-                    <p>Advanced search and filters</p>
+                    <p>Treatment planner search</p>
                     <label className="search-field">
                       <span>Country, city, hospital, surgeon, specialization, treatment</span>
                       <input
@@ -1383,6 +1470,84 @@ function App() {
                         value={query}
                       />
                     </label>
+                    <div className="planner-steps">
+                      <div className="planner-step active">
+                        <span>1</span>
+                        <strong>Select treatment</strong>
+                      </div>
+                      <div className={selectedProcedure === 'All procedures' ? 'planner-step' : 'planner-step active'}>
+                        <span>2</span>
+                        <strong>Choose procedure</strong>
+                      </div>
+                    </div>
+                    <div className="filter-block">
+                      <span>Treatment category</span>
+                      <div className="chip-grid">
+                        {TREATMENT_GROUPS.map((group) => (
+                          <button
+                            className={selectedTreatmentGroup === group.id ? 'mini-chip active' : 'mini-chip'}
+                            key={group.id}
+                            onClick={() => {
+                              setSelectedTreatmentGroup(group.id);
+                              setSelectedProcedure('All procedures');
+                            }}
+                            type="button"
+                          >
+                            {group.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="filter-select-grid">
+                      <label>
+                        Procedure
+                        <select onChange={(event) => setSelectedProcedure(event.target.value)} value={selectedProcedure}>
+                          {availableProcedures.map((procedure) => (
+                            <option key={procedure}>{procedure}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Destination
+                        <select onChange={(event) => setSelectedDestination(event.target.value)} value={selectedDestination}>
+                          {DESTINATION_FILTERS.map((destination) => (
+                            <option key={destination}>{destination}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Starting package
+                        <select onChange={(event) => setSelectedBudget(event.target.value)} value={selectedBudget}>
+                          {BUDGET_FILTERS.map((budget) => (
+                            <option key={budget.label}>{budget.label}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Care support
+                        <select onChange={(event) => setSelectedSupportFilter(event.target.value)} value={selectedSupportFilter}>
+                          <option>Any support</option>
+                          <option>Visa letter support</option>
+                          <option>Translator on request</option>
+                          <option>Airport pickup</option>
+                          <option>Interpreter service</option>
+                          <option>Hotel transfer desk</option>
+                          <option>Insurance desk</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div className="destination-strip">
+                      {DESTINATION_FILTERS.slice(1).map((destination) => (
+                        <button
+                          className={selectedDestination === destination ? 'destination-chip active' : 'destination-chip'}
+                          key={destination}
+                          onClick={() => setSelectedDestination(destination)}
+                          type="button"
+                        >
+                          {destination}
+                        </button>
+                      ))}
+                    </div>
                     <div className="chip-grid">
                       <button
                         className={selectedSpecialty === 'All' ? 'mini-chip active' : 'mini-chip'}
@@ -1403,7 +1568,7 @@ function App() {
                       ))}
                     </div>
                     <div className="filter-note">
-                      Use country, city, hospital name, surgeon name, medical specialization, and treatment type to shortlist the right option.
+                      Inspired by treatment-first discovery and two-step medical journey planners: category, procedure, destination, budget, accreditation, support, hospital, and doctor signals all stay visible while shortlisting.
                     </div>
                   </section>
 
@@ -1412,19 +1577,71 @@ function App() {
                       <h3>{hospitals.length} matched providers</h3>
                     </div>
                     <div className="list-stack">
+                      {hospitals.length === 0 && (
+                        <div className="empty-state">
+                          <strong>No providers match these filters</strong>
+                          <span>Try a wider budget, another destination, or all procedures.</span>
+                        </div>
+                      )}
                       {hospitals.map((hospital) => (
                         <button
-                          className="search-card"
+                          className="search-card provider-card"
                           key={hospital.id}
                           onClick={() => openHospital(hospital.id, 'hospital')}
                           type="button"
                         >
                           <img alt={hospital.name} className="card-thumb" src={hospital.image} />
-                          <div>
+                          <div className="provider-card-copy">
+                            <div className="hospital-card-topline">
+                              <span className="hospital-chip">{hospital.treatmentType}</span>
+                              <span className="hospital-city">{hospital.city}, {hospital.country}</span>
+                            </div>
                             <strong>{hospital.name}</strong>
-                            <p>{hospital.specialty}</p>
+                            <p>{hospital.specialty} - {hospital.valueScore}% value for money</p>
+                            <div className="provider-metrics">
+                              <span>From {formatCurrency(hospital.packageFrom)}</span>
+                              <span>{hospital.rating} rating</span>
+                              <span>{hospital.surgeons} doctors</span>
+                            </div>
+                            <div className="hospital-card-tags">
+                              {hospital.procedures.slice(0, 3).map((item) => (
+                                <span className="hospital-tag" key={item}>{item}</span>
+                              ))}
+                            </div>
                           </div>
-                          <span>{hospital.city}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="module-card">
+                    <div className="section-heading">
+                      <h3>Doctor listings</h3>
+                    </div>
+                    <div className="doctor-list">
+                      {hospitals.length === 0 && (
+                        <div className="empty-state">
+                          <strong>No doctors match these filters</strong>
+                          <span>Reset destination or support filters to see more specialists.</span>
+                        </div>
+                      )}
+                      {hospitals.map((hospital) => (
+                        <button
+                          className="doctor-card"
+                          key={`${hospital.id}-doctor`}
+                          onClick={() => openHospital(hospital.id, 'surgeon')}
+                          type="button"
+                        >
+                          <img alt={hospital.leadSurgeon} src={hospital.surgeonImage} />
+                          <div>
+                            <strong>{hospital.leadSurgeon}</strong>
+                            <p>{hospital.surgeonTitle}</p>
+                            <span>{hospital.doctorExperience} - {hospital.name}</span>
+                            <div className="provider-metrics compact">
+                              <span>{formatCurrency(hospital.doctorFee)} consult</span>
+                              <span>{hospital.languages.slice(0, 2).join(', ')}</span>
+                            </div>
+                          </div>
                         </button>
                       ))}
                     </div>
@@ -1441,6 +1658,19 @@ function App() {
                     <p>Hospital profile</p>
                     <h3>{selectedHospital.name}</h3>
                     <span>{selectedHospital.city}, {selectedHospital.country} - {selectedHospital.rating} rating</span>
+                  </section>
+
+                  <section className="module-card listing-summary-card">
+                    <div className="provider-metrics">
+                      <span>From {formatCurrency(selectedHospital.packageFrom)}</span>
+                      <span>{selectedHospital.valueScore}% value</span>
+                      <span>{selectedHospital.availability}</span>
+                    </div>
+                    <div className="hospital-card-tags">
+                      {selectedHospital.certifications.map((item) => (
+                        <span className="hospital-tag" key={item}>{item}</span>
+                      ))}
+                    </div>
                   </section>
 
                   <section className="module-card">
@@ -1464,6 +1694,14 @@ function App() {
                       <div>
                         <span>Consult path</span>
                         <strong>Request based</strong>
+                      </div>
+                      <div>
+                        <span>Languages</span>
+                        <strong>{selectedHospital.languages.join(', ')}</strong>
+                      </div>
+                      <div>
+                        <span>Package from</span>
+                        <strong>{formatCurrency(selectedHospital.packageFrom)}</strong>
                       </div>
                     </div>
                   </section>
@@ -1541,7 +1779,7 @@ function App() {
                       </div>
                       <div>
                         <span>Experience</span>
-                        <strong>15+ years</strong>
+                        <strong>{selectedHospital.doctorExperience}</strong>
                       </div>
                       <div>
                         <span>Qualifications</span>
@@ -1550,6 +1788,14 @@ function App() {
                       <div>
                         <span>Consultation mode</span>
                         <strong>Video and visit planning</strong>
+                      </div>
+                      <div>
+                        <span>Consultation fee</span>
+                        <strong>{formatCurrency(selectedHospital.doctorFee)}</strong>
+                      </div>
+                      <div>
+                        <span>Languages</span>
+                        <strong>{selectedHospital.languages.join(', ')}</strong>
                       </div>
                     </div>
                   </section>
