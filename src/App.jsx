@@ -151,15 +151,15 @@ const HOSPITALS = [
 ];
 
 const APP_SCREENS = [
-  { id: 'home', label: 'Home' },
-  { id: 'patient', label: 'Patient' },
-  { id: 'search', label: 'Search' },
-  { id: 'hospital', label: 'Hospital' },
-  { id: 'surgeon', label: 'Surgeon' },
-  { id: 'video', label: 'Live Call' },
-  { id: 'support', label: 'Support' },
-  { id: 'cost', label: 'Cost' },
-  { id: 'request', label: 'Request' },
+  { id: 'home', label: 'Explore', icon: 'EX' },
+  { id: 'patient', label: 'Care', icon: 'MC' },
+  { id: 'search', label: 'Treat', icon: 'TR' },
+  { id: 'hospital', label: 'Hosp', icon: 'HS' },
+  { id: 'surgeon', label: 'Docs', icon: 'DR' },
+  { id: 'video', label: 'Video', icon: 'VC' },
+  { id: 'support', label: 'Help', icon: 'HP' },
+  { id: 'cost', label: 'Cost', icon: 'BD' },
+  { id: 'request', label: 'Req', icon: 'RQ' },
 ];
 
 const AUTH_ONLY_SCREENS = new Set(['patient', 'video', 'support']);
@@ -378,6 +378,7 @@ const BOOKING_CATEGORIES = [
     title: 'Knee and Joints related',
     subtitle: 'Orthopedics',
     short: 'KJ',
+    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80',
     ailments: ['ACL injury', 'Arthritis', 'Hip replacement', 'Knee replacement'],
   },
   {
@@ -385,6 +386,7 @@ const BOOKING_CATEGORIES = [
     title: 'Eye related',
     subtitle: 'Ophthalmology',
     short: 'EY',
+    image: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=600&q=80',
     ailments: ['Cataract', 'Lasik', 'Glaucoma', 'Squinteye'],
   },
   {
@@ -392,6 +394,7 @@ const BOOKING_CATEGORIES = [
     title: 'General Surgery',
     subtitle: 'General Surgery',
     short: 'GS',
+    image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?auto=format&fit=crop&w=600&q=80',
     ailments: ['Gallbladder stone', 'Hernia', 'Appendix', 'Laparoscopic procedure'],
   },
   {
@@ -399,6 +402,7 @@ const BOOKING_CATEGORIES = [
     title: 'Anus related',
     subtitle: 'Proctology',
     short: 'PR',
+    image: 'https://images.unsplash.com/photo-1579154341098-e4e158cc7f55?auto=format&fit=crop&w=600&q=80',
     ailments: ['Piles', 'Fissure', 'Fistula', 'Rectal pain'],
   },
   {
@@ -406,6 +410,7 @@ const BOOKING_CATEGORIES = [
     title: 'Cardiology related',
     subtitle: 'Cardiology',
     short: 'CA',
+    image: 'https://images.unsplash.com/photo-1511174511562-5f7f18b874f8?auto=format&fit=crop&w=600&q=80',
     ailments: ['Chest pain review', 'Angioplasty review', 'Valve issue', 'Heart rhythm concern'],
   },
   {
@@ -413,6 +418,7 @@ const BOOKING_CATEGORIES = [
     title: 'Cosmetic Surgery related',
     subtitle: 'Cosmetic',
     short: 'CS',
+    image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
     ailments: ['Hair transplant', 'Rhinoplasty', 'Skin revision', 'Body contouring'],
   },
   {
@@ -420,6 +426,7 @@ const BOOKING_CATEGORIES = [
     title: 'Kidney related',
     subtitle: 'Urology',
     short: 'UR',
+    image: 'https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?auto=format&fit=crop&w=600&q=80',
     ailments: ['Kidney stone', 'Prostate issue', 'Urinary blockage', 'Ureter issue'],
   },
   {
@@ -427,6 +434,7 @@ const BOOKING_CATEGORIES = [
     title: 'Gynaecology related',
     subtitle: 'Gynaecology',
     short: 'GY',
+    image: 'https://images.unsplash.com/photo-1666214277657-b0b4f6dd1d8c?auto=format&fit=crop&w=600&q=80',
     ailments: ['Fibroid review', 'PCOS', 'Infertility review', 'Pelvic pain'],
   },
 ];
@@ -571,9 +579,10 @@ function SidebarIcon() {
   );
 }
 
-function ScreenButton({ active, children, onClick }) {
+function ScreenButton({ active, children, icon, onClick }) {
   return (
     <button className={active ? 'screen-chip active' : 'screen-chip'} onClick={onClick} type="button">
+      <span className="screen-chip-icon">{icon}</span>
       {children}
     </button>
   );
@@ -912,6 +921,7 @@ function App() {
                 {APP_SCREENS.map((screen) => (
                   <ScreenButton
                     active={activeScreen === screen.id}
+                    icon={screen.icon}
                     key={screen.id}
                     onClick={() => {
                       if (AUTH_ONLY_SCREENS.has(screen.id)) {
@@ -1005,17 +1015,122 @@ function App() {
 
               {activeScreen === 'home' && (
                 <div className="screen-view app-scroll">
-                  <section className="module-card mini-hero-section">
-                    <div className="mini-hero-carousel">
-                      {HERO_CAROUSEL_CARDS.map((card) => (
-                        <article className="mini-hero-card" key={card.title}>
-                          <img alt={card.title} src={card.image} />
-                          <div>
-                            <strong>{card.title}</strong>
-                            <span>{card.body}</span>
-                          </div>
-                        </article>
+                  <section className="module-card home-front-section disease-front-section">
+                    <div className="section-heading">
+                      <h3>Disease cards</h3>
+                      <button className="mini-chip active" onClick={() => openBookingFlow()} type="button">
+                        All
+                      </button>
+                    </div>
+                    <div className="front-carousel disease-front-carousel">
+                      {BOOKING_CATEGORIES.map((category) => (
+                        <button
+                          aria-label={`Filter by ${category.title}`}
+                          className={selectedBookingCategoryId === category.id ? 'front-disease-card active' : 'front-disease-card'}
+                          key={category.id}
+                          onClick={() => {
+                            setSelectedBookingCategoryId(category.id);
+                            setSelectedAilment(category.ailments[0]);
+                            setSelectedTreatmentId('all');
+                            setSelectedTreatmentGroup('all');
+                            setSelectedSpecialty(BOOKING_CATEGORY_SPECIALTY[category.id] ?? 'All');
+                          }}
+                          type="button"
+                        >
+                          <img alt="" aria-hidden="true" className="front-disease-image" src={category.image} />
+                          <strong>{category.title}</strong>
+                          <small>{category.ailments.slice(0, 2).join(', ')}</small>
+                        </button>
                       ))}
+                    </div>
+                  </section>
+
+                  <section className="module-card home-front-section hospital-listing-card">
+                    <div className="section-heading">
+                      <h3>Hospital listings</h3>
+                      <span className="section-total">{hospitals.length} found</span>
+                    </div>
+                    <div className="quick-filter-row tight-filter-row">
+                      <button
+                        className={selectedSpecialty === 'All' ? 'mini-chip active' : 'mini-chip'}
+                        onClick={() => {
+                          setSelectedSpecialty('All');
+                          setSelectedTreatmentId('all');
+                        }}
+                        type="button"
+                      >
+                        All
+                      </button>
+                      {SPECIALTIES.map((item) => (
+                        <button
+                          className={selectedSpecialty === item ? 'mini-chip active' : 'mini-chip'}
+                          key={item}
+                          onClick={() => setSelectedSpecialty(item)}
+                          type="button"
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="front-carousel hospital-front-carousel">
+                      {hospitals.map((hospital) => {
+                        const packageFrom = getActivePackageFrom(hospital, selectedTreatment);
+                        const estimatedTotal = getEstimatedTotal(hospital, packageFrom);
+                        return (
+                          <button
+                            className="front-hospital-card"
+                            key={hospital.id}
+                            onClick={() => openHospital(hospital.id, 'hospital')}
+                            type="button"
+                          >
+                            <img alt={hospital.name} src={hospital.image} />
+                            <div className="front-hospital-copy">
+                              <span className="hospital-chip">{selectedTreatment?.title ?? hospital.specialty}</span>
+                              <strong>{hospital.name}</strong>
+                              <p>{hospital.city}, {hospital.country}</p>
+                              <div className="front-budget-row">
+                                <span><small>Package</small><strong>{formatCurrency(packageFrom)}</strong></span>
+                                <span><small>Total</small><strong>{formatCurrency(estimatedTotal)}</strong></span>
+                              </div>
+                              <div className="hospital-card-footer compact">
+                                <span>{hospital.rating} rating</span>
+                                <span>{hospital.surgeons} doctors</span>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+
+                  <section className="module-card home-front-section">
+                    <div className="section-heading">
+                      <h3>Doctor listings</h3>
+                      <span className="section-total">{hospitals.length} found</span>
+                    </div>
+                    <div className="front-carousel doctor-front-carousel">
+                      {hospitals.map((hospital) => {
+                        const packageFrom = getActivePackageFrom(hospital, selectedTreatment);
+                        return (
+                          <button
+                            className="front-doctor-card"
+                            key={hospital.leadSurgeon}
+                            onClick={() => openHospital(hospital.id, 'surgeon')}
+                            type="button"
+                          >
+                            <img alt={hospital.leadSurgeon} src={hospital.surgeonImage} />
+                            <div>
+                              <strong>{hospital.leadSurgeon}</strong>
+                              <p>{hospital.surgeonTitle}</p>
+                              <span>{hospital.doctorExperience} - {hospital.city}</span>
+                              <div className="provider-metrics compact">
+                                <span>{formatCurrency(hospital.doctorFee)} consult</span>
+                                <span>{formatCurrency(packageFrom)} package</span>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </section>
 
@@ -1076,9 +1191,23 @@ function App() {
                     </div>
                   </section>
 
+                  <section className="module-card mini-hero-section">
+                    <div className="mini-hero-carousel">
+                      {HERO_CAROUSEL_CARDS.map((card) => (
+                        <article className="mini-hero-card" key={card.title}>
+                          <img alt={card.title} src={card.image} />
+                          <div>
+                            <strong>{card.title}</strong>
+                            <span>{card.body}</span>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+
                   <section className="module-card hospital-listing-card priority-directory-card">
                     <div className="section-heading">
-                      <h3>Hospital listings</h3>
+                      <h3>Detailed hospital costs</h3>
                       <span className="section-total">{hospitals.length} found</span>
                     </div>
                     <div className="list-stack compact-list-stack">
@@ -1101,9 +1230,9 @@ function App() {
                               <strong>{hospital.name}</strong>
                               <p>{hospital.specialty} - {hospital.valueScore}% value for money</p>
                               <div className="estimate-line">
-                                <span>Treatment {formatCurrency(packageFrom)}</span>
-                                <span>Travel {formatCurrency(hospital.cost.flight + hospital.cost.visa + hospital.cost.local)}</span>
-                                <span>Stay {formatCurrency(hospital.cost.stayNight * 6)}</span>
+                                <span><small>Package</small><strong>{formatCurrency(packageFrom)}</strong></span>
+                                <span><small>Travel</small><strong>{formatCurrency(hospital.cost.flight + hospital.cost.visa + hospital.cost.local)}</strong></span>
+                                <span><small>Stay</small><strong>{formatCurrency(hospital.cost.stayNight * 6)}</strong></span>
                               </div>
                               <div className="total-estimate">
                                 <span>Total estimate</span>
@@ -1118,7 +1247,7 @@ function App() {
 
                   <section className="module-card priority-directory-card">
                     <div className="section-heading">
-                      <h3>Doctor listings</h3>
+                      <h3>Detailed doctor costs</h3>
                       <span className="section-total">{hospitals.length} found</span>
                     </div>
                     <div className="doctor-list compact-list-stack">
@@ -1158,16 +1287,19 @@ function App() {
                     <div className="disease-chip-grid">
                       {BOOKING_CATEGORIES.slice(0, 8).map((category) => (
                         <button
+                          aria-label={`Open ${category.title}`}
                           className={selectedBookingCategoryId === category.id ? 'disease-chip active' : 'disease-chip'}
                           key={category.id}
                           onClick={() => {
                             setSelectedBookingCategoryId(category.id);
                             setSelectedAilment(category.ailments[0]);
+                            setSelectedTreatmentId('all');
+                            setSelectedTreatmentGroup('all');
                             setSelectedSpecialty(BOOKING_CATEGORY_SPECIALTY[category.id] ?? 'All');
                           }}
                           type="button"
                         >
-                          <span>{category.short}</span>
+                          <img alt="" aria-hidden="true" src={category.image} />
                           <strong>{category.title}</strong>
                         </button>
                       ))}
