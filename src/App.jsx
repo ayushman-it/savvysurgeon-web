@@ -495,10 +495,57 @@ function getTreatmentImage(treatment) {
 function StarRating({ rating }) {
   return (
     <span className="star-rating" aria-label={`${rating} star rating`}>
-      <span>★★★★★</span>
+      <span>*****</span>
       <strong>{rating}</strong>
     </span>
   );
+}
+
+const SEARCH_ALIASES = {
+  cardiac: ['cariac', 'heart', 'cardiology', 'bypass', 'cabg', 'angioplasty'],
+  orthopedics: ['ortho', 'bone', 'joint', 'knee', 'hip', 'arthritis'],
+  oncology: ['cancer', 'tumor', 'chemo', 'radiation'],
+  spine: ['back pain', 'disc', 'spinal', 'neck pain'],
+  urology: ['kidney', 'stone', 'prostate', 'urine'],
+  infertility: ['ivf', 'fertility', 'pregnancy'],
+  hair: ['hair loss', 'baldness', 'graft'],
+  dental: ['teeth', 'implant', 'smile'],
+  plastic: ['cosmetic', 'aesthetic', 'rhinoplasty'],
+  ophthalmology: ['eye', 'cataract', 'lasik', 'retina'],
+};
+
+function normalizeSearch(value) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function getSearchOptions(query) {
+  const search = normalizeSearch(query);
+  if (!search) return [];
+
+  const options = [];
+  TREATMENTS.forEach((treatment) => {
+    const aliases = SEARCH_ALIASES[treatment.id] ?? [];
+    const haystack = normalizeSearch([treatment.title, treatment.group, treatment.specialty, ...aliases].join(' '));
+    if (haystack.includes(search) || aliases.some((alias) => normalizeSearch(alias).includes(search))) {
+      options.push({ type: 'Treatment', label: treatment.title, meta: `${treatment.group} package estimate`, treatment });
+    }
+  });
+
+  HOSPITALS.forEach((hospital) => {
+    const haystack = normalizeSearch([hospital.name, hospital.city, hospital.country, hospital.specialty, hospital.doctor, ...hospital.tags, ...hospital.doctorFocus].join(' '));
+    if (haystack.includes(search)) {
+      options.push({ type: 'Hospital', label: hospital.name, meta: `${hospital.city}, ${hospital.country}`, hospital });
+      options.push({ type: 'Doctor', label: hospital.doctor, meta: `${hospital.doctorTitle} - ${hospital.name}`, hospital });
+    }
+  });
+
+  DESTINATIONS.forEach((destination) => {
+    if (normalizeSearch(destination.country).includes(search)) {
+      options.push({ type: 'Destination', label: destination.country, meta: `${destination.hospitals} hospitals, ${destination.doctors} doctors`, destination });
+    }
+  });
+
+  return options.slice(0, 8);
 }
 
 function Breadcrumbs({ items }) {
@@ -592,7 +639,7 @@ function Header({ currency, page, setCurrency, setPage }) {
   );
 }
 
-function Hero({ query, setQuery, selectedCountry, setSelectedCountry, setPage }) {
+function Hero({ onFindCare, onSelectSearchOption, query, searchOptions, setQuery, selectedCountry, setSelectedCountry, setPage }) {
   return (
     <section className="hero-section">
       <div className="hero-copy">
@@ -605,6 +652,17 @@ function Hero({ query, setQuery, selectedCountry, setSelectedCountry, setPage })
           <label>
             Search treatments, hospitals, doctors
             <input onChange={(event) => setQuery(event.target.value)} placeholder="Orthopedics, Oncology, Dr. Selim..." value={query} />
+            {searchOptions.length > 0 && (
+              <div className="search-suggestions">
+                {searchOptions.map((option) => (
+                  <button key={`${option.type}-${option.label}`} onClick={() => onSelectSearchOption(option)} type="button">
+                    <span>{option.type}</span>
+                    <strong>{option.label}</strong>
+                    <small>{option.meta}</small>
+                  </button>
+                ))}
+              </div>
+            )}
           </label>
           <label>
             Where
@@ -615,7 +673,7 @@ function Hero({ query, setQuery, selectedCountry, setSelectedCountry, setPage })
               ))}
             </select>
           </label>
-          <button onClick={() => setPage('treatments')} type="button">Find care</button>
+          <button onClick={onFindCare} type="button">Find care</button>
         </div>
         <div className="journey-steps">
           <span>1,200+ patient reviews</span>
@@ -1631,19 +1689,44 @@ function App() {
   }, []);
 
   const filteredHospitals = useMemo(() => {
-    const search = query.trim().toLowerCase();
+    const search = normalizeSearch(query);
     return HOSPITALS.filter((hospital) => {
       const matchesCountry = selectedCountry === 'All destinations' || hospital.country === selectedCountry;
       const matchesTreatment = !selectedTreatment || hospital.tags.includes(selectedTreatment.title) || hospital.specialty === selectedTreatment.specialty;
-      const haystack = [hospital.name, hospital.city, hospital.country, hospital.specialty, hospital.doctor, ...hospital.tags]
-        .join(' ')
-        .toLowerCase();
+      const haystack = normalizeSearch([hospital.name, hospital.city, hospital.country, hospital.specialty, hospital.doctor, ...hospital.tags, ...hospital.doctorFocus].join(' '));
       return matchesCountry && matchesTreatment && (!search || haystack.includes(search));
     });
   }, [query, selectedCountry, selectedTreatment]);
 
   const shownHospitals = filteredHospitals.length ? filteredHospitals : HOSPITALS;
   const money = (value) => formatCurrency(value, currency);
+  const searchOptions = useMemo(() => getSearchOptions(query), [query]);
+
+  const openSearchOption = (option) => {
+    if (!option) {
+      setPage(query.trim() ? 'hospitals' : 'treatments');
+      return;
+    }
+    if (option.treatment) {
+      setSelectedTreatment(option.treatment);
+      setPage('treatment-detail');
+    } else if (option.hospital && option.type === 'Doctor') {
+      setSelectedHospital(option.hospital);
+      setPage('doctor-detail');
+    } else if (option.hospital) {
+      setSelectedHospital(option.hospital);
+      const matchedTreatment = TREATMENTS.find((item) => option.hospital.tags.includes(item.title) || option.hospital.specialty === item.specialty);
+      if (matchedTreatment) setSelectedTreatment(matchedTreatment);
+      setPage('hospital-detail');
+    } else if (option.destination) {
+      setSelectedCountry(option.destination.country);
+      setPage('hospitals');
+    }
+  };
+
+  const handleFindCare = () => {
+    openSearchOption(searchOptions[0]);
+  };
 
   const showHome = page === 'home';
 
@@ -1652,7 +1735,10 @@ function App() {
       <Header currency={currency} page={page} setCurrency={setCurrency} setPage={setPage} />
       {(showHome || page === 'planner') && (
         <Hero
+          onFindCare={handleFindCare}
+          onSelectSearchOption={openSearchOption}
           query={query}
+          searchOptions={searchOptions}
           selectedCountry={selectedCountry}
           setPage={setPage}
           setQuery={setQuery}
@@ -1709,3 +1795,4 @@ function App() {
 }
 
 export default App;
+
