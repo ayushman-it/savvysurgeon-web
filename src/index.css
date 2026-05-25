@@ -1389,9 +1389,52 @@ main {
 }
 
 .treatment-overview-grid,
-.treatment-content-grid {
+.treatment-content-grid,
+.treatment-care-grid,
+.treatment-command-bar {
   display: grid;
   gap: 18px;
+}
+
+.treatment-command-bar {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.treatment-command-bar article {
+  min-height: 118px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  display: grid;
+  align-content: center;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(16, 36, 90, 0.06);
+}
+
+.treatment-command-bar span,
+.treatment-command-bar strong,
+.treatment-command-bar small {
+  display: block;
+}
+
+.treatment-command-bar span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.treatment-command-bar strong {
+  margin-top: 8px;
+  color: var(--navy);
+  font-size: 1.25rem;
+}
+
+.treatment-command-bar small {
+  margin-top: 7px;
+  color: var(--muted);
+  line-height: 1.45;
 }
 
 .treatment-overview-grid {
@@ -1431,12 +1474,21 @@ main {
   align-items: start;
 }
 
+.treatment-care-grid {
+  grid-template-columns: minmax(260px, 0.85fr) minmax(360px, 1.05fr) minmax(420px, 1.2fr);
+  align-items: start;
+}
+
 .treatment-content-grid > .detail-panel {
   min-height: 0;
 }
 
 .treatment-content-grid > .detail-panel:last-child {
   align-self: stretch;
+}
+
+.treatment-care-grid > .detail-panel {
+  min-height: 0;
 }
 
 .cost-transparency-section {
@@ -1576,16 +1628,24 @@ main {
 
 .treatment-detail-media {
   display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 14px;
+  grid-template-columns: 180px 1fr;
+  gap: 16px;
   align-items: center;
 }
 
 .treatment-detail-media img {
   width: 100%;
-  height: 130px;
+  height: 150px;
   border-radius: 18px;
   object-fit: cover;
+}
+
+.treatment-detail-media span {
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .treatment-detail-media p {
@@ -1638,7 +1698,7 @@ main {
 
 .suggestion-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 14px;
 }
 
@@ -2633,6 +2693,8 @@ main {
   .modal-treatment-grid,
   .treatment-overview-grid,
   .treatment-content-grid,
+  .treatment-care-grid,
+  .treatment-command-bar,
   .cost-transparency-section,
   .budget-explain-grid,
   .full-budget-section,

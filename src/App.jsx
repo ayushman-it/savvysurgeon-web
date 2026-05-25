@@ -917,7 +917,7 @@ function TreatmentDetail({ hospitals, money, selectedTreatment, setPage, setSele
           <div className="detail-metrics">
             <strong>{money(selectedTreatment.packageFrom)} starting package</strong>
             <strong>{selectedTreatment.value}% value score</strong>
-          <strong>{suggestedHospitals.length} hospital options</strong>
+            <strong>{suggestedHospitals.length} hospital options</strong>
           </div>
           <div className="top-cta-row">
             <button onClick={() => setPage('planner')} type="button">Request treatment plan</button>
@@ -925,6 +925,28 @@ function TreatmentDetail({ hospitals, money, selectedTreatment, setPage, setSele
           </div>
         </div>
         <img alt={selectedTreatment.title} src={getTreatmentImage(selectedTreatment)} />
+      </div>
+      <div className="treatment-command-bar">
+        <article>
+          <span>Patient rating</span>
+          <strong><StarRating rating="4.9" /></strong>
+          <small>1,200+ reviews for cost clarity and hospital response</small>
+        </article>
+        <article>
+          <span>Starting package</span>
+          <strong>{money(selectedTreatment.packageFrom)}</strong>
+          <small>Before flights, stay, visa and local support</small>
+        </article>
+        <article>
+          <span>Quote speed</span>
+          <strong>48h</strong>
+          <small>Typical report review and hospital quote window</small>
+        </article>
+        <article>
+          <span>Best match</span>
+          <strong>{bestMatches[0].city}</strong>
+          <small>{bestMatches[0].name}</small>
+        </article>
       </div>
       <section className="cost-transparency-section">
         <div>
@@ -953,22 +975,7 @@ function TreatmentDetail({ hospitals, money, selectedTreatment, setPage, setSele
           </button>
         </div>
       </section>
-      <div className="treatment-overview-grid">
-        <article>
-          <StarRating rating="4.9" />
-          <strong>1,200+ patient reviews</strong>
-          <span>Reviewed for cost clarity, hospital coordination, and doctor response.</span>
-        </article>
-        <article>
-          <strong>{money(selectedTreatment.packageFrom)}</strong>
-          <span>Starting package before travel, stay, visa, and local support.</span>
-        </article>
-        <article>
-          <strong>48h</strong>
-          <span>Typical quote window after medical reports are shared.</span>
-        </article>
-      </div>
-      <div className="treatment-content-grid">
+      <div className="treatment-care-grid">
         <div className="detail-panel">
           <h2>What this journey includes</h2>
           <div className="included-grid">
@@ -978,17 +985,18 @@ function TreatmentDetail({ hospitals, money, selectedTreatment, setPage, setSele
           </div>
         </div>
         <div className="detail-panel treatment-detail-media">
-          <img alt={selectedTreatment.title} src={getTreatmentImage(selectedTreatment)} />
+          <img alt="" src={getTreatmentImage(selectedTreatment)} />
           <div>
-            <h2>Demo data today, API ready tomorrow</h2>
+            <span>{selectedTreatment.title}</span>
+            <h2>Live API ready budget model</h2>
             <p>
-              These prices are editable estimates. Later we can connect real hospital, doctor,
-              treatment package, flight, visa, and hotel APIs without changing this user flow.
+              Demo estimates today. Later this same layout can pull live hospital packages,
+              doctor fees, flights, visa, hotel and pickup pricing through real APIs.
             </p>
           </div>
         </div>
         <div className="detail-panel">
-          <h2>Best hospital matches</h2>
+          <h2>Best matches</h2>
           <div className="mini-list">
             {bestMatches.map((hospital) => (
               <button
@@ -999,7 +1007,7 @@ function TreatmentDetail({ hospitals, money, selectedTreatment, setPage, setSele
                 }}
                 type="button"
               >
-                <img alt={hospital.name} src={hospital.image} />
+                <img alt="" src={hospital.image} />
                 <span>
                   <strong>{hospital.name}</strong>
                   <small>{hospital.city}, {hospital.country} - Total estimate {money(totalCost(hospital, selectedTreatment))}</small>
@@ -1022,7 +1030,7 @@ function TreatmentDetail({ hospitals, money, selectedTreatment, setPage, setSele
                 }}
                 type="button"
               >
-                <img alt={hospital.name} src={hospital.image} />
+                <img alt="" src={hospital.image} />
                 <strong>{hospital.name}</strong>
                 <span>{hospital.city}, {hospital.country}</span>
                 <StarRating rating={hospital.rating} />
@@ -1043,7 +1051,7 @@ function TreatmentDetail({ hospitals, money, selectedTreatment, setPage, setSele
                 }}
                 type="button"
               >
-                <img alt={hospital.doctor} src={hospital.doctorImage} />
+                <img alt="" src={hospital.doctorImage} />
                 <strong>{hospital.doctor}</strong>
                 <span>{hospital.doctorTitle}</span>
                 <StarRating rating={hospital.rating} />
